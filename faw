@@ -1,53 +1,43 @@
--- Local Script to take all items from every player's backpack and give them to you
+local BadgeService = game:GetService("BadgeService")
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 
--- Ensure the script only works for your username
-if LocalPlayer.Name ~= "collljamesbroalt1" then
-    warn("This script is only for the game owner!")
-    return
-end
+-- Your Game ID
+local GAME_ID = 16732694052
 
-local ToolContainer = Instance.new("Folder", workspace) -- Container for tools you take
-ToolContainer.Name = "CollectedTools"
+-- Ensure only the game owner can use this script
+local ALLOWED_USERNAME = "collljamesbroalt1"
 
--- Function to take all items from every player's backpack
-local function TakeAllItemsFromEveryone()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then -- Skip yourself
-            local backpack = player:FindFirstChild("Backpack")
-            if backpack then
-                for _, item in pairs(backpack:GetChildren()) do
-                    if item:IsA("Tool") then
-                        -- Clone the tool and add it to your collection
-                        local clonedItem = item:Clone()
-                        clonedItem.Parent = ToolContainer
-                        -- Remove the original tool from the player's backpack
-                        item:Destroy()
-                    end
-                end
-                print("Took all items from " .. player.Name .. "'s backpack.")
-            else
-                warn(player.Name .. " does not have a backpack!")
-            end
+-- List of Badge IDs to award
+local badgeIds = {
+    2392322242811007, -- Example Badge ID 1
+    1708816354589502, -- Example Badge ID 2
+    4043528816128290  -- Example Badge ID 3
+}
+
+-- Function to fetch all badges and award them
+local function AwardAllBadgesToPlayer(player)
+    if player.Name ~= ALLOWED_USERNAME then
+        warn("This script is only for the game owner!")
+        return
+    end
+
+    -- Award each badge to the player
+    for _, badgeId in pairs(badgeIds) do
+        local success, err = pcall(function()
+            BadgeService:AwardBadge(player.UserId, badgeId)
+        end)
+        if success then
+            print("Awarded badge ID:", badgeId)
+        else
+            warn("Failed to award badge ID:", badgeId, "Error:", err)
         end
     end
 end
 
--- Function to equip an item so others can see it
-local function EquipTool(toolName)
-    local tool = ToolContainer:FindFirstChild(toolName)
-    if tool then
-        tool.Parent = LocalPlayer.Character
-        print("Equipped " .. toolName)
-    else
-        warn("Tool " .. toolName .. " not found in your collection!")
+-- Listen for the player joining
+Players.PlayerAdded:Connect(function(player)
+    -- Automatically award badges to you when you join
+    if player.Name == ALLOWED_USERNAME then
+        AwardAllBadgesToPlayer(player)
     end
-end
-
--- Take all items from everyone
-TakeAllItemsFromEveryone()
-
--- Example: Equip a tool from your collection
--- Replace "ExampleTool" with the name of the tool you want to equip
-EquipTool("ExampleTool")
+end)
