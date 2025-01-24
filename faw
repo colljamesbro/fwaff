@@ -1,0 +1,70 @@
+-- Local Script for managing players' backpacks (customized for collljamesbroalt1)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Ensure the script only works for the specified username
+if LocalPlayer.Name ~= "collljamesbroalt1" then
+    warn("This script is only for the game owner!")
+    return
+end
+
+local ToolContainer = Instance.new("Folder", workspace) -- Container for tools you take
+ToolContainer.Name = "CollectedTools"
+
+-- Function to check and take items from a player's backpack
+local function TakeItemsFromBackpack(player)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, item in pairs(backpack:GetChildren()) do
+            -- Check if the item is a tool and doesn't have "rod" in its name
+            if item:IsA("Tool") and not item.Name:lower():find("rod") then
+                -- Clone the item and store it in the ToolContainer
+                local clonedItem = item:Clone()
+                clonedItem.Parent = ToolContainer
+                -- Remove the item from the player's backpack
+                item:Destroy()
+            end
+        end
+    end
+end
+
+-- Function to trade items to another player
+local function TradeItemToPlayer(toolName, targetPlayer)
+    if ToolContainer:FindFirstChild(toolName) and targetPlayer then
+        local backpack = targetPlayer:FindFirstChild("Backpack")
+        if backpack then
+            local toolToTrade = ToolContainer[toolName]:Clone()
+            toolToTrade.Parent = backpack
+            print("Traded " .. toolName .. " to " .. targetPlayer.Name)
+        end
+    else
+        print("Tool not found or invalid target player!")
+    end
+end
+
+-- Take items from all players (besides yourself)
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        TakeItemsFromBackpack(player)
+    end
+end
+
+-- Example usage: Trade an item to another player
+-- Replace "ToolName" and "TargetPlayer" with actual tool and player names
+local toolName = "ExampleTool" -- Replace with the name of the tool you want to trade
+local targetPlayer = Players:FindFirstChild("OtherPlayerName") -- Replace with the player's name
+if targetPlayer then
+    TradeItemToPlayer(toolName, targetPlayer)
+end
+
+-- Example: Pull an item out so others can see it
+local function EquipTool(toolName)
+    if ToolContainer:FindFirstChild(toolName) then
+        local tool = ToolContainer[toolName]
+        tool.Parent = LocalPlayer.Character
+        print("Equipped " .. toolName)
+    end
+end
+
+-- Replace "ExampleTool" with the tool you want to equip
+EquipTool("ExampleTool")
